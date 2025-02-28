@@ -1,6 +1,6 @@
-using RINAO_PathPlanning
+using HungryHIPPO
 using Test
 
-@testset "RINAO_PathPlanning.jl" begin
+@testset "HungryHIPPO.jl" begin
     # Write your tests here.
 end
