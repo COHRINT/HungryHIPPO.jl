@@ -1,9 +1,9 @@
-module RINAO_PathPlanning
+module HungryHIPPO
 
     include("WaveFrontPlanner.jl")
 
     export
-    sub_max_restrict,
+    wavefrontPlanner,
     get_direct_path
 
 end

@@ -1,12 +1,9 @@
-using FileIO
-
-include("../../RINAO/RINAO.jl/test/evaluateOperatorData.jl")
-
 
 mutable struct weights
     # Struct to hold the weights for the reward function
     # w1 -> reward, incentive to go to high reward areas
-    w1::Float64
+    w::Float64
+    threshold::Float64
 
 end
 
@@ -106,7 +103,7 @@ function get_wave(db, start, goal, xVec, yVec, obstacles)
 
 end
 
-function sub_max_restrict(db, start, goal,hp,obstacles)
+function wavefrontPlanner(db, start, goal,hp,obstacles)
     # Inputs: db, start and goal (x, y) vector sets
     # Outputs: a path that restricts the grid to only the rectangle between start and goal, and maximizes reward
     
@@ -266,7 +263,7 @@ function RewardFxn(xVec,yVec,hp,wave_front,reward)
         for j in yVec
 
             # Potentially rethink how we weigh our rewards, reduce hyperparameters
-            if reward[i,j] > 0.8
+            if reward[i,j] > hp.threshold
                 wave_front[i,j] = wave_front[i,j] - (1+reward[i,j])^hp.w1
             else
                 wave_front[i,j] = wave_front[i,j] - reward[i,j]^hp.w1
