@@ -19,12 +19,13 @@ LogExpFunctions = "2ab3a3ac-af41-5b50-aa03-7779005ae688"
 Optim = "429524aa-4258-5aef-a3af-852621145aeb"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 QuickPOMDPs = "8af83fb2-a731-493c-9049-9e19dbce6165"
+RINAO = "4704976e-b4d2-4bbd-ab43-54f804cbcb14"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 WebSockets = "104b5d7c-a370-577a-8038-80a2059c5097"
-RINAO = "4704976e-b4d2-4bbd-ab43-54f804cbcb14"
 
 [compat]
+ColorSchemes = "3"
 julia = "1.6.7"
 
 [extras]
