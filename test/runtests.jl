@@ -2,5 +2,5 @@ using HungryHIPPO
 using Test
 
 @testset "HungryHIPPO.jl" begin
-    # Write your tests here.
+    include("test_HungryHIPPO.jl")
 end

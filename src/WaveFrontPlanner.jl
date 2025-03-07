@@ -107,6 +107,12 @@ function wavefrontPlanner(db, start, goal,hp,obstacles)
     # Inputs: db, start and goal (x, y) vector sets
     # Outputs: a path that restricts the grid to only the rectangle between start and goal, and maximizes reward
     
+    #print("Type of db: ", typeof(db))
+    print("Type of start: ", typeof(start),'\n')
+    print("Type of goal: ", typeof(goal),'\n')
+    #print("Type of hp: ", typeof(hp))
+    print("Type of obstacles: ", typeof(obstacles),'\n')
+
     dist = 0
     totalReward = 0
 
@@ -174,11 +180,8 @@ function wavefrontPlanner(db, start, goal,hp,obstacles)
         totalReward += db.reward[path[end][1], path[end][2]]
     end
     
-    
-    # Here is where I should add the metric function, and return that and the path.
-    M1 = rewardRatio(dist,totalReward)
-
-    return path, wave_front, M1
+    print("Type of path: ", typeof(path),'\n')
+    return path
 
 end
 
@@ -264,9 +267,9 @@ function RewardFxn(xVec,yVec,hp,wave_front,reward)
 
             # Potentially rethink how we weigh our rewards, reduce hyperparameters
             if reward[i,j] > hp.threshold
-                wave_front[i,j] = wave_front[i,j] - (1+reward[i,j])^hp.w1
+                wave_front[i,j] = wave_front[i,j] - (1+reward[i,j])^hp.w
             else
-                wave_front[i,j] = wave_front[i,j] - reward[i,j]^hp.w1
+                wave_front[i,j] = wave_front[i,j] - reward[i,j]^hp.w
             end
 
         end
