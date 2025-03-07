@@ -45,7 +45,7 @@ Outputs:
 
 `path::Vector{Any}` A list of coordinates representing the computed path.Typically each index in path is a tuple of integers, Tuple{Int64, Int64}.
 
-# hp Struct
+# weights Struct
 
 A struct that holds tuning parameters for the wavefront path planner.
 
