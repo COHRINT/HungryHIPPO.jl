@@ -15,17 +15,17 @@ Inputs:
 
 `db:` map_database struct
 
-`start:` Start node (coordinates) 
+`start::Tuple{Int64, Int64}` Start node (coordinates) 
 
-`goal:` End node (coordinates)
+`goal::Tuple{Int64, Int64}` End node (coordinates)
 
 `hp:` [Struct](#hp-struct) containing hyperparameters for the path planner .
 
-`obstacles:` List containing obstacle coordinates that the planner must avoid.
+`obstacles::Vector{Tuple{Int64, Int64}}` List containing obstacle coordinates that the planner must avoid.
 
 Output:
 
-`path:` A list of coordinates representing the computed path.
+`path::Vector{Any}` A list of coordinates representing the computed path. Typically each index in path is a tuple of integers, Tuple{Int64, Int64}.
 
 
 ## get_direct_path
@@ -37,13 +37,13 @@ Function:
 
 Inputs:
 
-`start:` Start node (coordinates) 
+`start::Tuple{Int64, Int64}` Start node (coordinates) 
 
-`finish:` End node (coordinates)
+`finish::Tuple{Int64, Int64}` End node (coordinates)
 
 Outputs:
 
-`path:` A list of coordinates representing the computed path.
+`path::Vector{Any}` A list of coordinates representing the computed path.Typically each index in path is a tuple of integers, Tuple{Int64, Int64}.
 
 # hp Struct
 
