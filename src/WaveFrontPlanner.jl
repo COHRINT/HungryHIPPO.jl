@@ -1,10 +1,23 @@
 
 mutable struct weights
     # Struct to hold the weights for the reward function
-    # w1 -> reward, incentive to go to high reward areas
+
+    # w -> reward, incentive to go to high reward areas
+    # threshold -> threshold for reward, if reward is below threshold, inflate wavefront value
     w::Float64
     threshold::Float64
 
+end
+
+mutable struct Performance
+    # Struct to hold the performance metrics
+
+    # reward_to_dist -> reward to distance ratio
+    # wf_update -> number of times the wavefront has to be reset
+
+    reward_to_dist::Float64
+    wf_update::Int
+    
 end
 
 function get_direct_path(start, finish) #For only one object, get the direct path between current and goal position
@@ -103,15 +116,9 @@ function get_wave(db, start, goal, xVec, yVec, obstacles)
 
 end
 
-function wavefrontPlanner(db, start, goal,hp,obstacles)
+function wavefrontPlanner(db, start, goal,hp,M,obstacles)
     # Inputs: db, start and goal (x, y) vector sets
     # Outputs: a path that restricts the grid to only the rectangle between start and goal, and maximizes reward
-    
-    #print("Type of db: ", typeof(db))
-    print("Type of start: ", typeof(start),'\n')
-    print("Type of goal: ", typeof(goal),'\n')
-    #print("Type of hp: ", typeof(hp))
-    print("Type of obstacles: ", typeof(obstacles),'\n')
 
     dist = 0
     totalReward = 0
@@ -147,7 +154,9 @@ function wavefrontPlanner(db, start, goal,hp,obstacles)
     push!(path, start)
 
     # Loop through and generate path until the goal is reacheed
-    visited = [start]
+    visited = []
+    collectedRwrd = [start]
+
     while path[end] != goal
 
         # we want to store all visited grid cells so the planner never gets stuck in a loop
@@ -161,8 +170,9 @@ function wavefrontPlanner(db, start, goal,hp,obstacles)
         # check neighbors are in bounds to prevent errors
         neighbors = [(x+1, y), (x-1, y), (x, y+1), (x, y-1), (x+1, y+1), (x-1, y-1), (x+1, y-1), (x-1, y+1)]
 
+
         for neighbor in neighbors
-            if inBounds(neighbor, db)
+            if inBounds(neighbor, wave_front)
                 continue
             else
                 deleteat!(neighbors, findall(x->x==neighbor,neighbors))
@@ -170,18 +180,27 @@ function wavefrontPlanner(db, start, goal,hp,obstacles)
         end
 
         # Get action should take
-        action = action_wavefront(wave_front, neighbors,curr,visited,goal)
+        action, M= action_wavefront(wave_front, neighbors,curr,visited,goal,db,M)
+
+        
+        if !(tuple(curr[1] + action[1], curr[2] + action[2]) in collectedRwrd)
+
+            totalReward += db.reward[path[end][1], path[end][2]]
+
+        end
 
         # add the action to the path
         push!(path, tuple(curr[1] + action[1], curr[2] + action[2]))
+        push!(collectedRwrd, tuple(curr[1] + action[1], curr[2] + action[2]))
 
-        # increment distance and reward (for metric)
-        dist += 1
-        totalReward += db.reward[path[end][1], path[end][2]]
+
     end
     
-    print("Type of path: ", typeof(path),'\n')
-    return path
+    dist = length(path)
+
+    M.reward_to_dist = totalReward/dist
+
+    return path, wave_front, M
 
 end
 
@@ -194,7 +213,7 @@ end
 #          goal -> goal node
 # Outputs: action -> action to take
 
-function action_wavefront(wave_front, neighbors,node,visited,goal)
+function action_wavefront(wave_front, neighbors,node,visited,goal,db,M)
 
     valid = false
 
@@ -208,6 +227,7 @@ function action_wavefront(wave_front, neighbors,node,visited,goal)
             # if all neighbors have been visited, return to the last visited node, clear visited list, and remake the wavefront
 
             sx, sy = node
+            print("Reset - sx: ",sx," sy: ",sy,"\n")
             gx, gy = goal
 
             # Get orientation
@@ -222,17 +242,29 @@ function action_wavefront(wave_front, neighbors,node,visited,goal)
                 yVec = gy:1:sy
             end
 
+            # Increment the wavefront update count
+            M.wf_update += 1
+
             # Reset wavefront, visited, and neighbors
             wave_front = get_wave(db, node, goal, xVec, yVec,obstacles)
+            wave_front = addObstacle(wave_front, obstacles)
+
+            reward = db.reward/maximum(db.reward[xVec, yVec])
+
+            wave_front = RewardFxn(xVec,yVec,hp,wave_front,reward)
+
             visited = []
             neighbors = [(sx+1, sy), (sx-1, sy), (sx, sy+1), (sx, sy-1), (sx+1, sy+1), (sx-1, sy-1), (sx+1, sy-1), (sx-1, sy+1)]
+
+            reset = true
+            
             continue
 
         end
 
         for neighbor in neighbors
 
-            if inBounds(neighbor, db)
+            if inBounds(neighbor, wave_front)
                 push!(wave_vals, wave_front[neighbor[1], neighbor[2]])
             else
                 push!(wave_vals, Inf)
@@ -252,7 +284,7 @@ function action_wavefront(wave_front, neighbors,node,visited,goal)
             deleteat!(neighbors, findall(x->x==neighbors[min_index],neighbors))
             continue
         else
-            return action
+            return action, M
         end
 
     end
@@ -269,7 +301,14 @@ function RewardFxn(xVec,yVec,hp,wave_front,reward)
             if reward[i,j] > hp.threshold
                 wave_front[i,j] = wave_front[i,j] - (1+reward[i,j])^hp.w
             else
-                wave_front[i,j] = wave_front[i,j] - reward[i,j]^hp.w
+                # TEST - Inflate wave_front more when threshold is not met
+                wave_front[i,j] = wave_front[i,j] + (1+reward[i,j])^hp.w
+                
+                # TEST - Inflate wave_front more when threshold is not met
+                #wave_front[i,j] = Inf
+
+                # Original Implementation
+                #wave_front[i,j] = wave_front[i,j] - reward[i,j]^hp.w
             end
 
         end
@@ -288,12 +327,14 @@ function addObstacle(waveFront, obstacles)
     return waveFront
 end
 
-function inBounds(neighbor, db)
+function inBounds(neighbor, wave_front)
 
-    # Check if the node is in bounds
-    if neighbor[1] < 1 || neighbor[2] < 1 || neighbor[1] > size(db.reward)[1] || neighbor[2] > size(db.reward)[2]
+    # Check if the node is in the wavefront bounds
+
+    if wave_front[neighbor[1], neighbor[2]] == Inf
         return false
     else    
         return true
     end
+
 end
