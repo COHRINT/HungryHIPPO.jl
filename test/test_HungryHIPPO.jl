@@ -23,7 +23,7 @@ X = []
 RperD = []
 Replans = []
 
-
+"""
 for i in 0.5:0.1:13
 
     hp.w = i
@@ -41,13 +41,15 @@ end
 plotMetrics(X,RperD,"Reward per Distance")
 plotMetrics(X,Replans, "# of WaveFront Replans")
 
+"""
 
+reward = db.reward
 
-#path, wave_front, M = wavefrontPlanner(db,s0,db.ID2grid[endpt],hp,M,obstacles)
+path, wave_front, M = wavefrontPlanner(reward,s0,db.ID2grid[endpt],hp,M,obstacles)
 
 #print("Reward per Distance: ", M.reward_to_dist, "\n")
 #print("# of replans: ", M.wf_update, "\n")
 
 #visualizeWaveFront(s0,db.ID2grid[endpt],wave_front,db,path)
-#visualizeRewardMap(s0,db.ID2grid[endpt],db,path)
+visualizeRewardMap(s0,db.ID2grid[endpt],db,path)
 

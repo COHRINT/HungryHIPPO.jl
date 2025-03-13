@@ -61,20 +61,20 @@ end
 # Generates the wavefront between a start and goal node
 # Used to define a distance metric to plan over
 # Inputs:
-# db -> map_database
+# reward -> map_database
 # start -> start node
 # goal -> goal node
 # xVec -> x vector to use
 # yVec -> y vector to use
 # Output:
 # wave_front -> wavefront between start and goal
-function get_wave(db, start, goal, xVec, yVec, obstacles)
+function get_wave(reward, start, goal, xVec, yVec, obstacles)
 
     sx, sy = start
     gx, gy = goal
 
     # Populate wave_front
-    wave_front = ones(size(db.reward))*Inf
+    wave_front = ones(size(reward))*Inf
     wave_front[xVec, yVec] .= 0
 
     # Initialize goal 
@@ -116,8 +116,8 @@ function get_wave(db, start, goal, xVec, yVec, obstacles)
 
 end
 
-function wavefrontPlanner(db, start, goal,hp,M,obstacles)
-    # Inputs: db, start and goal (x, y) vector sets
+function wavefrontPlanner(reward, start, goal,hp,M,obstacles)
+    # Inputs: reward, start and goal (x, y) vector sets
     # Outputs: a path that restricts the grid to only the rectangle between start and goal, and maximizes reward
 
     dist = 0
@@ -140,10 +140,10 @@ function wavefrontPlanner(db, start, goal,hp,M,obstacles)
     end
     
     # Use wavefront planner but not restricted to follow all points
-    wave_front = get_wave(db, start, goal, xVec, yVec,obstacles)
+    wave_front = get_wave(reward, start, goal, xVec, yVec,obstacles)
     
     ## Normalize reward s.t all rewards are between 0 and 1
-    reward = db.reward/maximum(db.reward[xVec, yVec])
+    reward = reward/maximum(reward)
 
     # Update wavefront so that it is more incentivized to go to high reward areas
     wave_front = RewardFxn(xVec,yVec,hp,wave_front,reward)
@@ -180,12 +180,12 @@ function wavefrontPlanner(db, start, goal,hp,M,obstacles)
         end
 
         # Get action should take
-        action, M= action_wavefront(wave_front, neighbors,curr,visited,goal,db,M)
+        action, M= action_wavefront(wave_front, neighbors,curr,visited,goal,reward,M)
 
         
         if !(tuple(curr[1] + action[1], curr[2] + action[2]) in collectedRwrd)
 
-            totalReward += db.reward[path[end][1], path[end][2]]
+            totalReward += reward[path[end][1], path[end][2]]
 
         end
 
@@ -213,7 +213,7 @@ end
 #          goal -> goal node
 # Outputs: action -> action to take
 
-function action_wavefront(wave_front, neighbors,node,visited,goal,db,M)
+function action_wavefront(wave_front, neighbors,node,visited,goal,reward,M)
 
     valid = false
 
@@ -246,10 +246,10 @@ function action_wavefront(wave_front, neighbors,node,visited,goal,db,M)
             M.wf_update += 1
 
             # Reset wavefront, visited, and neighbors
-            wave_front = get_wave(db, node, goal, xVec, yVec,obstacles)
+            wave_front = get_wave(reward, node, goal, xVec, yVec,obstacles)
             wave_front = addObstacle(wave_front, obstacles)
 
-            reward = db.reward/maximum(db.reward[xVec, yVec])
+            reward = reward/maximum(reward[xVec, yVec])
 
             wave_front = RewardFxn(xVec,yVec,hp,wave_front,reward)
 
