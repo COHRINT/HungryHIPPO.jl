@@ -9,7 +9,7 @@ Computes a path using a wavefront approach, ensuring the drone navigates around 
 
 Function:
 
-`wavefrontPlanner(reward, start, goal,hp,obstacles) -> path`
+`wavefrontPlanner(reward, start, waypoints,hp,obstacles) -> path`
 
 Inputs:
 
@@ -17,7 +17,7 @@ Inputs:
 
 `start::Tuple{Int64, Int64}` Start node (coordinates) 
 
-`goal::Tuple{Int64, Int64}` End node (coordinates)
+`waypoints::Vector{Tuple{Int64, Int64}}` Ordered list of waypoints for the planner to visit.
 
 `hp:` [Struct](#hp-struct) containing hyperparameters for the path planner.
 
