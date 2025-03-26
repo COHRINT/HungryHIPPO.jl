@@ -18,8 +18,14 @@ function visualizeWaveFront(start,goal,waveFront,db,path)
 
     # Create scatter traces for start and goal nodes
     start_trace = PlotlyJS.scatter(x=[X[start[2]]], y=[Y[start[1]]], mode="markers", marker_color="red", name="Start")
-    goal_trace = PlotlyJS.scatter(x=[X[goal[2]]], y=[Y[goal[1]]], mode="markers", marker_color="green", name="Goal")
     
+    # Create scatter trace for the goal
+    yG = [goal[i][1] for i in eachindex(goal)]
+    xG = [goal[i][2] for i in eachindex(goal)]
+
+    goal_trace = PlotlyJS.scatter(x=xG, y=-yG, mode="markers", marker_color="green", name="Goal")
+   
+
     # Create scatter trace for the path
     yP = [path[i][1] for i in eachindex(path)]
     xP = [path[i][2] for i in eachindex(path)]
@@ -69,7 +75,12 @@ function visualizeRewardMap(start,goal,db,path)
 
     # Create scatter traces for start and goal nodes
     start_trace = PlotlyJS.scatter(x=[X[start[2]]], y=[Y[start[1]]], mode="markers", marker_color="red", name="Start")
-    goal_trace = PlotlyJS.scatter(x=[X[goal[2]]], y=[Y[goal[1]]], mode="markers", marker_color="green", name="Goal")
+    
+    # Create scatter trace for the goal
+    yG = [goal[i][1] for i in eachindex(goal)]
+    xG = [goal[i][2] for i in eachindex(goal)]
+
+    goal_trace = PlotlyJS.scatter(x=xG, y=-yG, mode="markers", marker_color="green", name="Goal")
 
     xP = [path[i][1] for i in eachindex(path)]
     yP = [path[i][2] for i in eachindex(path)]
@@ -91,10 +102,17 @@ function visualizeRewardMap(start,goal,db,path)
     
 end
 
-function plotMetrics(X,Y,title)
+function plotMetrics(X,Y,STD,title)
 
     # Create a scatter plot using PlotlyJS
-    scatter_trace = PlotlyJS.scatter(x=X, y=Y, mode="lines+markers", marker_color="blue", name=title)
+    scatter_trace = PlotlyJS.scatter(x=X, y=Y, mode="lines+markers", error_y=attr(
+        type="data",
+        array=2 .* STD,  # 2σ bounds
+        visible=true,
+        color="rgb(100,100,100)",
+        thickness=1,
+        width=3
+    ),marker_color="blue", name=title)
 
     # Combine traces into a plot
     plot_data = [scatter_trace]
