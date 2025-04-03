@@ -1,7 +1,6 @@
 # HungryHIPPO
 
-Path planning code for the RINAO/HIPPO projects. Computes a path between two cells using various approches. NOTE that this code is actively being developed, and thus broken code may exist on the master branch.
-
+Path planning code for the RINAO/HIPPO projects. Computes a path between two cells using various approches. 
 # Usage
 
 ## wavefrontPlanner
