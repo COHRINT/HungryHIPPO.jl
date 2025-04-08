@@ -1,4 +1,6 @@
 
+include("WaveFrontGen.jl")
+
 mutable struct weights
     # Struct to hold the weights for the reward function
 
@@ -68,139 +70,84 @@ end
 # yVec -> y vector to use
 # Output:
 # wave_front -> wavefront between start and goal
-function get_wave(reward, start, goal, xVec, yVec, obstacles)
 
-    sx, sy = start
-    gx, gy = goal
 
-    # Populate wave_front
-    wave_front = ones(size(reward))*Inf
-    wave_front[xVec, yVec] .= 0
-
-    # Initialize goal 
-    wave_front[gx, gy] = 2
-
-    # Loop through and generate wavefront
-    for i in xVec
-        for j in yVec
-            # Need to get next index, based on order of xVec and yVec
-            if gx < sx
-                # Previous index is + 1
-                prior_i = i - 1
-            else
-                prior_i = i + 1
-            end
-            if gy < sy
-                # Previous index is + 1
-                prior_j = j - 1
-            else
-                prior_j = j + 1
-            end
-
-            if i == gx && j == gy
-                continue
-            elseif j == gy # along y edge, check prior x
-                wave_front[i, j] = wave_front[prior_i, j] + 1
-            elseif i == gx # along x edge, check prior y
-                wave_front[i, j] = wave_front[i, prior_j] + 1 # move along edge
-            else
-                wave_front[i, j] = 1 + minimum([wave_front[prior_i, j], wave_front[i, prior_j], wave_front[prior_i, prior_j]])
-            end
-        end
-    end
-
-    # Add obstacles to the wavefront (if any)
-    wave_front = addObstacle(wave_front, obstacles)
-    
-    return wave_front
-
-end
-
-function wavefrontPlanner(reward, start, goal,hp,M,obstacles)
+function wavefrontPlanner(reward, start, goals,hp,obstacles)
     # Inputs: reward, start and goal (x, y) vector sets
     # Outputs: a path that restricts the grid to only the rectangle between start and goal, and maximizes reward
 
-    dist = 0
-    totalReward = 0
-
-    sx, sy = start
-    gx, gy = goal
-
-    # Get orientation
-    if gx > sx
-        xVec = gx:-1:sx
-    else
-        xVec = gx:1:sx
-    end
-
-    if gy > sy
-        yVec = gy:-1:sy
-    else
-        yVec = gy:1:sy
-    end
-    
-    # Use wavefront planner but not restricted to follow all points
-    wave_front = get_wave(reward, start, goal, xVec, yVec,obstacles)
-    
-    ## Normalize reward s.t all rewards are between 0 and 1
-    reward = reward/maximum(reward)
-
-    # Update wavefront so that it is more incentivized to go to high reward areas
-    wave_front = RewardFxn(xVec,yVec,hp,wave_front,reward)
-    
-    # Now, to motion plan, start at start, and move to the minimum value at each step
     path = []
-    # add first point to path
-    push!(path, start)
 
-    # Loop through and generate path until the goal is reacheed
-    visited = []
-    collectedRwrd = [start]
+    for goal in goals
 
-    while path[end] != goal
+        sx, sy = start
+        gx, gy = goal
 
-        # we want to store all visited grid cells so the planner never gets stuck in a loop
-        push!(visited,path[end])
+        # Get orientation
+        if gx > sx
+            xVec = gx:-1:sx
+        else
+            xVec = gx:1:sx
+        end
 
-        # update curr
-        curr = path[end]
+        if gy > sy
+            yVec = gy:-1:sy
+        else
+            yVec = gy:1:sy
+        end
+    
+        # Use wavefront planner but not restricted to follow all points
+        wave_front = get_wave(reward, start, goal, xVec, yVec,obstacles)
+    
+        ## Normalize reward s.t all rewards are between 0 and 1
+        reward = reward/maximum(reward)
 
-        x,y = curr
+        # Update wavefront so that it is more incentivized to go to high reward areas
+        wave_front = RewardFxn(xVec,yVec,hp,wave_front,reward)
+    
+        # Now, to motion plan, start at start, and move to the minimum value at each step
+        # add first point to path
+        push!(path, start)
 
-        # check neighbors are in bounds to prevent errors
-        neighbors = [(x+1, y), (x-1, y), (x, y+1), (x, y-1), (x+1, y+1), (x-1, y-1), (x+1, y-1), (x-1, y+1)]
+        # Loop through and generate path until the goal is reacheed
+        visited = []
+
+        while path[end] != goal
+
+            # we want to store all visited grid cells so the planner never gets stuck in a loop
+            push!(visited,path[end])
+
+            # update curr
+            curr = path[end]
+
+            x,y = curr
+
+            # check neighbors are in bounds to prevent errors
+            neighbors = [(x+1, y), (x-1, y), (x, y+1), (x, y-1), (x+1, y+1), (x-1, y-1), (x+1, y-1), (x-1, y+1)]
 
 
-        for neighbor in neighbors
-            if inBounds(neighbor, wave_front)
-                continue
-            else
-                deleteat!(neighbors, findall(x->x==neighbor,neighbors))
+            for neighbor in neighbors
+                if inBounds(neighbor, wave_front)
+                    continue
+                else
+                    deleteat!(neighbors, findall(x->x==neighbor,neighbors))
+                end
             end
-        end
 
-        # Get action should take
-        action, M= action_wavefront(wave_front, neighbors,curr,visited,goal,reward,M)
+            # Get action should take
+            action = action_wavefront(wave_front, neighbors,curr,visited,goal,reward,M)
 
-        
-        if !(tuple(curr[1] + action[1], curr[2] + action[2]) in collectedRwrd)
+            # add the action to the path
+            push!(path, tuple(curr[1] + action[1], curr[2] + action[2]))
 
-            totalReward += reward[path[end][1], path[end][2]]
 
         end
 
-        # add the action to the path
-        push!(path, tuple(curr[1] + action[1], curr[2] + action[2]))
-        push!(collectedRwrd, tuple(curr[1] + action[1], curr[2] + action[2]))
-
+        start = goal
 
     end
-    
-    dist = length(path)
 
-    M.reward_to_dist = totalReward/dist
-
-    return path, wave_front, M
+    return path
 
 end
 
@@ -284,7 +231,7 @@ function action_wavefront(wave_front, neighbors,node,visited,goal,reward,M)
             deleteat!(neighbors, findall(x->x==neighbors[min_index],neighbors))
             continue
         else
-            return action, M
+            return action
         end
 
     end
@@ -316,7 +263,6 @@ function RewardFxn(xVec,yVec,hp,wave_front,reward)
 
     return wave_front
 end
-
 function addObstacle(waveFront, obstacles)
     # Add an obstacle to the database
     # obstacle is a list of tuples, where each tuple is a grid cell

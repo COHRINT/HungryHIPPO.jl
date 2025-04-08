@@ -1,8 +1,7 @@
-include("../src/WaveFrontPlanner.jl")
 include("visualize.jl")
 include("./../RINAO.jl/test/evaluateOperatorData.jl")
+include("../src/WaveFrontGen.jl")
 
-# Testing/Debugging HungryHIPPO
 toPlot = false
 
 S1 = "./../RINAO.jl/operator_data/Brainard/Brainard_S1.jl"
@@ -19,28 +18,44 @@ S10 = "./../RINAO.jl/operator_data/Brainard/Brainard_S10.jl"
 include(S2)
 db, vars, inputs = processJSONInputs(inputJSON, toPlot)
 
-# List of ordered waypoints for the planner to visit
-waypoints = [(19, 83),(30,67),(41,45),(38,20),(30,9),(17,12)]
- 
-# Start node
-start = (24, 100)
- 
-#hyperparameters struct, hp
-hp = weights(1.5,0.8)
+goal = (30,67)
+s0 = (24, 100)
 
 
 obstacles = []
 
-for i in 35:1:45
-    push!(obstacles, (i, 33))
-    push!(obstacles, (i, 34))
-    push!(obstacles, (i, 35))
+for i in 20:1:36
+    push!(obstacles, (i, 82))
+    push!(obstacles, (i, 83))
+    push!(obstacles, (i, 84))
 end
+
 
 reward = db.reward
 
+sx = s0[1]
+sy = s0[2]
+gx = goal[1]
+gy = goal[2]
 
-path = wavefrontPlanner(reward,start,goal,hp,obstacles)
 
-visualizeRewardMap(s0,goal,db,path,obstacles)
+# Get orientation
+if gx > sx
+    xVec = gx:-1:sx
+else
+    xVec = gx:1:sx
+end
+
+if gy > sy
+    yVec = gy:-1:sy
+else
+    yVec = gy:1:sy
+end
+
+
+waveFront = get_wave(reward, s0, goal, xVec, yVec, obstacles)
+visualizeWaveFront(s0,goal,obstacles,waveFront)
+
+
+
 

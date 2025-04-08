@@ -1,6 +1,7 @@
 module HungryHIPPO
 
     include("WaveFrontPlanner.jl")
+    include("WaveFrontGen.jl")
 
     export
     wavefrontPlanner,
