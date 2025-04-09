@@ -20,17 +20,12 @@ Inputs:
 
 `hp:` [Struct](#hp-struct) containing hyperparameters for the path planner.
 
-`M:` [Struct](#performance-struct) containing performance metrics that are updated throughout wavefrontPlanner.
-
 `obstacles::Vector{Tuple{Int64, Int64}}` List containing obstacle coordinates that the planner must avoid.
 
 Output:
 
 `path::Vector{Any}` A list of coordinates representing the computed path. Typically each index in path is a tuple of integers, Tuple{Int64, Int64}.
 
-`wave_front::Matrix{Float64}` Matrix with each index corresponding to a grid cell on the map. Outputted purely for plotting purposes.  
-
-`M::Performance` Returns updated scruct of performance metrics.
 
 ## get_direct_path
 Computes a direct path between the start and goal nodes. Does not consider any obstacles or the reward map.
