@@ -20,10 +20,10 @@ include(S2)
 db, vars, inputs = processJSONInputs(inputJSON, toPlot)
 
 # List of ordered waypoints for the planner to visit
-waypoints = [(19, 83),(30,67),(41,45),(38,20),(30,9),(17,12)]
+goal = [(19, 83),(26,80),(27,61),(37,63),(56,71)]
  
 # Start node
-start = (24, 100)
+s0 = (24, 100)
  
 #hyperparameters struct, hp
 hp = weights(1.5,0.8)
@@ -31,16 +31,15 @@ hp = weights(1.5,0.8)
 
 obstacles = []
 
-for i in 35:1:45
-    push!(obstacles, (i, 33))
-    push!(obstacles, (i, 34))
-    push!(obstacles, (i, 35))
+for i in 23:1:29
+    push!(obstacles, (i, 70))
+    push!(obstacles, (i, 71))
+    push!(obstacles, (i, 72))
 end
 
 reward = db.reward
-
-
-path = wavefrontPlanner(reward,start,goal,hp,obstacles)
+print(goal)
+path = wavefrontPlanner(reward,s0,goal,hp,obstacles)
 
 visualizeRewardMap(s0,goal,db,path,obstacles)
 

@@ -78,10 +78,19 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
 
     path = []
 
+    if size(goals) == 0
+        return path
+    end
+
     for goal in goals
 
         sx, sy = start
         gx, gy = goal
+
+        gx = floor(gx)
+        gy = floor(gy) 
+        sx = floor(sx)
+        sy = floor(sy)
 
         # Get orientation
         if gx > sx
@@ -135,7 +144,7 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
             end
 
             # Get action should take
-            action = action_wavefront(wave_front, neighbors,curr,visited,goal,reward,M)
+            action = action_wavefront(wave_front, neighbors,curr,visited,goal,reward)
 
             # add the action to the path
             push!(path, tuple(curr[1] + action[1], curr[2] + action[2]))
@@ -160,7 +169,7 @@ end
 #          goal -> goal node
 # Outputs: action -> action to take
 
-function action_wavefront(wave_front, neighbors,node,visited,goal,reward,M)
+function action_wavefront(wave_front, neighbors,node,visited,goal,reward)
 
     valid = false
 
@@ -174,7 +183,6 @@ function action_wavefront(wave_front, neighbors,node,visited,goal,reward,M)
             # if all neighbors have been visited, return to the last visited node, clear visited list, and remake the wavefront
 
             sx, sy = node
-            print("Reset - sx: ",sx," sy: ",sy,"\n")
             gx, gy = goal
 
             # Get orientation
