@@ -284,6 +284,9 @@ end
 function inBounds(neighbor, wave_front)
 
     # Check if the node is in the wavefront bounds
+    if neighbor[1] < 1 || neighbor[1] > size(wave_front, 1) || neighbor[2] < 1 || neighbor[2] > size(wave_front, 2)
+        return false
+    end
 
     if wave_front[neighbor[1], neighbor[2]] == Inf
         return false
