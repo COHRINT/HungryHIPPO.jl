@@ -205,6 +205,8 @@ function action_wavefront(wave_front, neighbors,node,visited,goal,reward)
             wave_front = get_wave(reward, node, goal, xVec, yVec,obstacles)
             wave_front = addObstacle(wave_front, obstacles)
 
+            println("WaveFront: ", wave_front)
+
             reward = reward/maximum(reward[xVec, yVec])
 
             wave_front = RewardFxn(xVec,yVec,hp,wave_front,reward)
