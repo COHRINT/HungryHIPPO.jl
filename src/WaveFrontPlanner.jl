@@ -128,6 +128,7 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
 
             # update curr
             curr = path[end]
+            println("Current: ", curr)
 
             x,y = curr
 
