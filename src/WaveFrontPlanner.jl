@@ -135,6 +135,7 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
             # check neighbors are in bounds to prevent errors
             neighbors = [(x+1, y), (x-1, y), (x, y+1), (x, y-1), (x+1, y+1), (x-1, y-1), (x+1, y-1), (x-1, y+1)]
 
+            println("Neighbors: ", neighbors)
 
             for neighbor in neighbors
                 if inBounds(neighbor, wave_front)
@@ -199,7 +200,6 @@ function action_wavefront(wave_front, neighbors,node,visited,goal,reward)
             end
 
             # Increment the wavefront update count
-            M.wf_update += 1
 
             # Reset wavefront, visited, and neighbors
             wave_front = get_wave(reward, node, goal, xVec, yVec,obstacles)
@@ -285,11 +285,8 @@ end
 function inBounds(neighbor, wave_front)
 
     # Check if the node is in the wavefront bounds
-    if neighbor[1] < 1 || neighbor[1] > size(wave_front, 1) || neighbor[2] < 1 || neighbor[2] > size(wave_front, 2)
-        return false
-    end
-
-    if wave_front[neighbor[1], neighbor[2]] == Inf
+    if neighbor[1] < 1 || neighbor[1] > size(wave_front, 1) || neighbor[2] < 1 || neighbor[2] > size(wave_front, 2) || wave_front[neighbor[1], neighbor[2]] == Inf
+        println("Neighbor out of bounds: ", neighbor, " Wavefront size: ", size(wave_front))
         return false
     else    
         return true
