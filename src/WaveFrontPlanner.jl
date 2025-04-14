@@ -107,7 +107,9 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
     
         # Use wavefront planner but not restricted to follow all points
         wave_front = get_wave(reward, start, goal, xVec, yVec,obstacles)
-    
+        
+        println("WaveFront: ", wave_front)
+        
         ## Normalize reward s.t all rewards are between 0 and 1
         reward = reward/maximum(reward)
 
@@ -205,7 +207,7 @@ function action_wavefront(wave_front, neighbors,node,visited,goal,reward)
             wave_front = get_wave(reward, node, goal, xVec, yVec,obstacles)
             wave_front = addObstacle(wave_front, obstacles)
 
-            println("WaveFront: ", wave_front)
+            
 
             reward = reward/maximum(reward[xVec, yVec])
 
