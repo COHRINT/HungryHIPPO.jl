@@ -123,7 +123,6 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
 
             # update curr
             curr = path[end]
-            println("Current: ", curr)
 
             x,y = curr
 
@@ -212,7 +211,7 @@ function resetWave(reward, node, goal, hp, obstacles)
 
     println("Resetting wavefront")
     # Reset the wavefront and neighbors
-    
+
     sx, sy = node
     gx, gy = goal
 
