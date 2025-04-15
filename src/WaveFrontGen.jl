@@ -120,6 +120,7 @@ function gen_wave_bfs(goal, waveFront)
     end
 
     waveFront[goal[1], goal[2]] = 2
+
     return waveFront
 
 end

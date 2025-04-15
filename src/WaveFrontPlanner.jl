@@ -87,11 +87,6 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
         sx, sy = start
         gx, gy = goal
 
-        gx = floor(gx)
-        gy = floor(gy) 
-        sx = floor(sx)
-        sy = floor(sy)
-
         # Get orientation
         if gx > sx
             xVec = gx:-1:sx
@@ -107,8 +102,6 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
     
         # Use wavefront planner but not restricted to follow all points
         wave_front = get_wave(reward, start, goal, xVec, yVec,obstacles)
-        
-        println("WaveFront: ", wave_front)
         
         ## Normalize reward s.t all rewards are between 0 and 1
         reward = reward/maximum(reward)
@@ -135,15 +128,14 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
             x,y = curr
 
             # check neighbors are in bounds to prevent errors
-            neighbors = [(x+1, y), (x-1, y), (x, y+1), (x, y-1), (x+1, y+1), (x-1, y-1), (x+1, y-1), (x-1, y+1)]
+            unchecked_neighbors = [(x+1, y), (x-1, y), (x, y+1), (x, y-1), (x+1, y+1), (x-1, y-1), (x+1, y-1), (x-1, y+1)]
+            neighbors = []
 
-            println("Neighbors: ", neighbors)
-
-            for neighbor in neighbors
+            for neighbor in unchecked_neighbors
                 if inBounds(neighbor, wave_front)
-                    continue
+                    push!(neighbors, neighbor)
                 else
-                    deleteat!(neighbors, findall(x->x==neighbor,neighbors))
+                    continue
                 end
             end
 
@@ -185,50 +177,15 @@ function action_wavefront(wave_front, neighbors,node,visited,goal,reward)
         if isempty(neighbors)
 
             # if all neighbors have been visited, return to the last visited node, clear visited list, and remake the wavefront
-
-            sx, sy = node
-            gx, gy = goal
-
-            # Get orientation
-            if gx > sx
-                xVec = gx:-1:sx
-            else
-                xVec = gx:1:sx
-            end
-            if gy > sy
-                yVec = gy:-1:sy
-            else
-                yVec = gy:1:sy
-            end
-
-            # Increment the wavefront update count
-
-            # Reset wavefront, visited, and neighbors
-            wave_front = get_wave(reward, node, goal, xVec, yVec,obstacles)
-            wave_front = addObstacle(wave_front, obstacles)
-
-            
-
-            reward = reward/maximum(reward[xVec, yVec])
-
-            wave_front = RewardFxn(xVec,yVec,hp,wave_front,reward)
-
             visited = []
-            neighbors = [(sx+1, sy), (sx-1, sy), (sx, sy+1), (sx, sy-1), (sx+1, sy+1), (sx-1, sy-1), (sx+1, sy-1), (sx-1, sy+1)]
-
-            reset = true
-            
+            wave_front, neighbors = resetWave(reward, node, goal, hp, obstacles)
             continue
 
         end
 
         for neighbor in neighbors
 
-            if inBounds(neighbor, wave_front)
-                push!(wave_vals, wave_front[neighbor[1], neighbor[2]])
-            else
-                push!(wave_vals, Inf)
-            end
+            push!(wave_vals, wave_front[neighbor[1], neighbor[2]])
 
         end
         
@@ -240,7 +197,7 @@ function action_wavefront(wave_front, neighbors,node,visited,goal,reward)
         chckNode = node .+ action
 
         if chckNode in visited
-            # if node has been visited or is an obstacle, get a new action and remove that cell from neighbors
+            # if node has been visited, get a new action and remove that cell from neighbors
             deleteat!(neighbors, findall(x->x==neighbors[min_index],neighbors))
             continue
         else
@@ -251,6 +208,48 @@ function action_wavefront(wave_front, neighbors,node,visited,goal,reward)
     
 end
 
+function resetWave(reward, node, goal, hp, obstacles)
+
+    println("Resetting wavefront")
+    # Reset the wavefront and neighbors
+    
+    sx, sy = node
+    gx, gy = goal
+
+    # Get orientation
+    if gx > sx
+        xVec = gx:-1:sx
+    else
+        xVec = gx:1:sx
+    end
+    if gy > sy
+        yVec = gy:-1:sy
+    else
+        yVec = gy:1:sy
+    end
+
+    # Reset wavefront, visited, and neighbors
+    wave_front = get_wave(reward, node, goal, xVec, yVec,obstacles)
+
+    reward = reward/maximum(reward[xVec, yVec])
+
+    wave_front = RewardFxn(xVec,yVec,hp,wave_front,reward)
+
+    unchecked_neighbors = [(sx+1, sy), (sx-1, sy), (sx, sy+1), (sx, sy-1), (sx+1, sy+1), (sx-1, sy-1), (sx+1, sy-1), (sx-1, sy+1)]
+    neighbors = []
+
+    for neighbor in unchecked_neighbors
+
+        if inBounds(neighbor, wave_front)
+            push!(neighbors, neighbor)
+        else
+            continue
+        end
+
+    end
+    
+    return wave_front, neighbors
+end
 
 function RewardFxn(xVec,yVec,hp,wave_front,reward)
     
@@ -276,23 +275,20 @@ function RewardFxn(xVec,yVec,hp,wave_front,reward)
 
     return wave_front
 end
-function addObstacle(waveFront, obstacles)
-    # Add an obstacle to the database
-    # obstacle is a list of tuples, where each tuple is a grid cell
-    for obstacle in obstacles
-        waveFront[obstacle[1], obstacle[2]] = Inf
-    end
 
-    return waveFront
-end
 
 function inBounds(neighbor, wave_front)
 
     # Check if the node is in the wavefront bounds
-    if neighbor[1] < 1 || neighbor[1] > size(wave_front, 1) || neighbor[2] < 1 || neighbor[2] > size(wave_front, 2) || wave_front[neighbor[1], neighbor[2]] == Inf
-        println("Neighbor out of bounds: ", neighbor, " Wavefront size: ", size(wave_front))
+    if neighbor[1] < 1 || neighbor[1] > size(wave_front, 1) || neighbor[2] < 1 || neighbor[2] > size(wave_front, 2)
         return false
-    else    
+    end
+
+    if wave_front[neighbor[1], neighbor[2]] == Inf || wave_front[neighbor[1], neighbor[2]] == 1
+        # Check if the node is an obstacle or has a wavefront value of 0
+        return false
+    else
+           
         return true
     end
 
