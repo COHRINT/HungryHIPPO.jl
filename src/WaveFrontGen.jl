@@ -29,20 +29,20 @@ function get_wave(reward, start, goal, xVec, yVec, obstacles)
 
         # Expand the wavefront - get orientation to expand WF
         if gx > sx
-            if gx > 2
+            if gx < size(reward,1)
                 gx += 1
             end
-            if sx < size(reward,1)
+            if sx > 2
                 sx -= 1
             end
 
             
             xVec = gx:-1:sx
         else
-            if gx < size(reward,1)
+            if gx > 2
                 gx -= 1
             end
-            if sx > 2
+            if sx < size(reward,1)
                 sx += 1
             end
             
@@ -54,13 +54,13 @@ function get_wave(reward, start, goal, xVec, yVec, obstacles)
             if gy < size(reward,2)
                 gy += 1
             end
-            if sy > 2
+            if sy > 2 
                 sy -= 1
             end
             
             yVec = gy:-1:sy
         else
-            if gy >2
+            if gy > 2
                 gy -= 1
             end
             if sy < size(reward,2)
