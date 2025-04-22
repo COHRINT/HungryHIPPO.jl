@@ -255,6 +255,10 @@ function RewardFxn(xVec,yVec,hp,wave_front,reward)
     for  i in xVec
         for j in yVec
 
+            if wave_front[i,j] == 1
+                continue
+            end
+            
             # Potentially rethink how we weigh our rewards, reduce hyperparameters
             if reward[i,j] > hp.threshold
                 wave_front[i,j] = wave_front[i,j] - (1+reward[i,j])^hp.w
@@ -262,11 +266,6 @@ function RewardFxn(xVec,yVec,hp,wave_front,reward)
                 # TEST - Inflate wave_front more when threshold is not met
                 wave_front[i,j] = wave_front[i,j] + (1+reward[i,j])^hp.w
                 
-                # TEST - Inflate wave_front more when threshold is not met
-                #wave_front[i,j] = Inf
-
-                # Original Implementation
-                #wave_front[i,j] = wave_front[i,j] - reward[i,j]^hp.w
             end
 
         end

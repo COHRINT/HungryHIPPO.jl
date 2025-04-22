@@ -17,10 +17,12 @@ function get_wave(reward, start, goal, xVec, yVec, obstacles)
     wave_front = ones(size(reward))*Inf
     wave_front[xVec, yVec] .= 0
 
-    # Use BFS to generate wavefront
-    wave_front = gen_wave_bfs(goal, wave_front)
     # Add obstacles to the wavefront (if any)
     wave_front = addObstacle(wave_front, obstacles)
+
+    # Use BFS to generate wavefront
+    wave_front = gen_wave_bfs(goal, wave_front)
+    
     made = possiblePath(wave_front,start,goal)
 
     while !made
@@ -110,7 +112,7 @@ function gen_wave_bfs(goal, waveFront)
                 push!(visited, neighbor)
                 push!(queue, neighbor)
 
-                if BoundCheck(neighbor, waveFront) && isValid(neighbor,waveFront) && isFree(neighbor,waveFront)
+                if BoundCheck(neighbor, waveFront) && isValid(neighbor,waveFront) && isFree(neighbor,waveFront) && waveFront[neighbor[1], neighbor[2]] != 1
                     # Check if neighbor is a valid cell and not an obstacle
                     waveFront[neighbor[1], neighbor[2]] = waveFront[cell[1], cell[2]] + 1
                 end
