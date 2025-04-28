@@ -1,6 +1,7 @@
 include("visualize.jl")
 include("./../RINAO.jl/test/evaluateOperatorData.jl")
 include("../src/WaveFrontGen.jl")
+include("../src/WaveFrontPlanner.jl")
 
 toPlot = false
 
@@ -21,10 +22,10 @@ db, vars, inputs = processJSONInputs(inputJSON, toPlot)
 goal = (30,67)
 s0 = (24, 100)
 
-
+reward = db.reward / maximum(db.reward)
 obstacles = []
 
-for i in 20:1:36
+for i in 25:1:30
     push!(obstacles, (i, 82))
     push!(obstacles, (i, 83))
     push!(obstacles, (i, 84))
@@ -52,8 +53,10 @@ else
     yVec = gy:1:sy
 end
 
+hp = weights(1.5,0.6)
 
 waveFront = get_wave(reward, s0, goal, xVec, yVec, obstacles)
+waveFront = RewardFxn(xVec,yVec,hp,waveFront,reward)
 visualizeWaveFront(s0,goal,obstacles,waveFront)
 
 

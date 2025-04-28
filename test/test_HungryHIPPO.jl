@@ -3,7 +3,6 @@ include("visualize.jl")
 include("./../RINAO.jl/test/evaluateOperatorData.jl")
 
 # Testing/Debugging HungryHIPPO
-toPlot = false
 
 S1 = "./../RINAO.jl/operator_data/Brainard/Brainard_S1.jl"
 S2 = "./../RINAO.jl/operator_data/Brainard/Brainard_S2.jl"
@@ -20,17 +19,17 @@ include(S2)
 db, vars, inputs = processJSONInputs(inputJSON, toPlot)
 
 # List of ordered waypoints for the planner to visit
-goal = [(1,1),(1,103),(66,103),(66,1)]
+goal = [(2,6)]
  
 # Start node
-s0 = (43, 55)
+s0 = (6,6)
  
 #hyperparameters struct, hp
-hp = weights(5.5,0.5)
+hp = weights(1.75,0.75)
 
-obstacles = []
+obstacles = [(1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,9),(1,10),(2,10),(3,10),(4,10),(5,10),(6,10),(7,10),(8,10),(9,10),(10,10),(2,1),(3,1),(4,1),(5,1),(6,1),(7,1),(8,1),(9,1),(10,1),(10,2),(10,3),(10,4),(10,5),(10,6),(10,7),(10,8),(10,9),(4,4),(4,5),(4,6),(4,7),(4,8),(5,4),(5,5),(5,6),(5,7),(5,8),(4,3),(5,3),(5,2),(4,2)]
 
-reward = db.reward
+reward = db.reward[1:10,1:10]
 
 
 path = wavefrontPlanner(reward,s0,goal,hp,obstacles)

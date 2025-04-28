@@ -123,7 +123,7 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
 
             # update curr
             curr = path[end]
-
+            println("Current node: ", curr)
             x,y = curr
 
             # check neighbors are in bounds to prevent errors
@@ -137,7 +137,8 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
                     continue
                 end
             end
-
+            
+            println("Neighbors: ", neighbors)
             # Get action should take
             action = action_wavefront(wave_front, neighbors,curr,visited,goal,reward)
 
