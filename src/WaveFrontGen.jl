@@ -28,6 +28,7 @@ function get_wave(reward, start, goal, xVec, yVec, obstacles)
     while !made
 
         # Expand the wavefront - get orientation to expand WF
+        println("Expanding wavefront")
         if gx > sx
             if gx < size(reward,1)
                 gx += 1
