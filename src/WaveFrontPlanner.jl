@@ -82,7 +82,12 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
         return path
     end
 
+
     for goal in goals
+
+        if goal in obstacles
+            continue
+        end
 
         sx, sy = start
         gx, gy = goal
@@ -101,8 +106,15 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
         end
     
         # Use wavefront planner but not restricted to follow all points
-        wave_front = get_wave(reward, start, goal, xVec, yVec,obstacles)
+        wave_front, reward, direct = get_wave(reward, start, goal, xVec, yVec,obstacles)
         
+        if direct
+            # If the path is direct, just get the direct path and return it
+            path_direct = get_direct_path(start, goal)
+            append!(path,path_direct)
+            start = goal
+            continue
+        end
         ## Normalize reward s.t all rewards are between 0 and 1
         reward = reward/maximum(reward)
 
@@ -137,10 +149,15 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
                     continue
                 end
             end
-            
-            println("Neighbors: ", neighbors)
+
             # Get action should take
             action = action_wavefront(wave_front, neighbors,curr,visited,goal,reward)
+
+            if action == (0,0)
+                path_direct = get_direct_path(curr, goal)
+                append!(path,path_direct)
+                break
+            end
 
             # add the action to the path
             push!(path, tuple(curr[1] + action[1], curr[2] + action[2]))
@@ -177,16 +194,19 @@ function action_wavefront(wave_front, neighbors,node,visited,goal,reward)
         if isempty(neighbors)
 
             # if all neighbors have been visited, return to the last visited node, clear visited list, and remake the wavefront
+
             visited = []
-            wave_front, neighbors = resetWave(reward, node, goal, hp, obstacles)
+            wave_front, neighbors, direct = resetWave(reward, node, goal, hp, obstacles)
             continue
 
         end
 
+        if direct
+            return (0,0)
+        end
+
         for neighbor in neighbors
-
             push!(wave_vals, wave_front[neighbor[1], neighbor[2]])
-
         end
         
         # Now get the minimum value
@@ -216,6 +236,9 @@ function resetWave(reward, node, goal, hp, obstacles)
     sx, sy = node
     gx, gy = goal
 
+    println("Start: ", node)
+    println("Goal: ", goal)
+    println(reward)
     # Get orientation
     if gx > sx
         xVec = gx:-1:sx
@@ -229,7 +252,9 @@ function resetWave(reward, node, goal, hp, obstacles)
     end
 
     # Reset wavefront, visited, and neighbors
-    wave_front = get_wave(reward, node, goal, xVec, yVec,obstacles)
+    wave_front, reward, direct = get_wave(reward, node, goal, xVec, yVec,obstacles)
+
+
 
     reward = reward/maximum(reward[xVec, yVec])
 
@@ -248,7 +273,7 @@ function resetWave(reward, node, goal, hp, obstacles)
 
     end
     
-    return wave_front, neighbors
+    return wave_front, neighbors, direct
 end
 
 function RewardFxn(xVec,yVec,hp,wave_front,reward)

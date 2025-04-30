@@ -13,6 +13,13 @@ function get_wave(reward, start, goal, xVec, yVec, obstacles)
     sx, sy = start
     gx, gy = goal
 
+    direct = false
+
+    prior_gx = 0
+    prior_gy = 0
+    prior_sx = 0
+    prior_sy = 0
+
     # Populate wave_front
     wave_front = ones(size(reward))*Inf
     wave_front[xVec, yVec] .= 0
@@ -30,19 +37,23 @@ function get_wave(reward, start, goal, xVec, yVec, obstacles)
         # Expand the wavefront - get orientation to expand WF
         println("Expanding wavefront")
         if gx > sx
+
             if gx < size(reward,1)
                 gx += 1
             end
+
             if sx > 2
                 sx -= 1
             end
 
-            
             xVec = gx:-1:sx
+
         else
+
             if gx > 2
                 gx -= 1
             end
+
             if sx < size(reward,1)
                 sx += 1
             end
@@ -55,6 +66,7 @@ function get_wave(reward, start, goal, xVec, yVec, obstacles)
             if gy < size(reward,2)
                 gy += 1
             end
+
             if sy > 2 
                 sy -= 1
             end
@@ -64,6 +76,7 @@ function get_wave(reward, start, goal, xVec, yVec, obstacles)
             if gy > 2
                 gy -= 1
             end
+
             if sy < size(reward,2)
                 sy += 1
             end
@@ -71,20 +84,42 @@ function get_wave(reward, start, goal, xVec, yVec, obstacles)
             yVec = gy:1:sy
         end
         
+        # Check if prior goal and start coordinates are the same as the new ones -> wavefront is stuck expanding
+        if (prior_gx == gx && prior_gy == gy) && (prior_sx == sx && prior_sy == sy)
+            println("No Valid path found, returning direct path")
+            direct = true
+            break
+            #= For now, just return the direct path to the goal
+            # Expand the reward by 1 in all directions
+            rows, cols = size(reward)
+
+            new_row = zeros(1, cols)
+            new_cols = zeros(rows+2, 1)
+
+            reward = vcat(new_row, reward, new_row)
+            reward = hcat(new_cols, reward, new_cols)
+
+            #println("Reward map expanded", reward)
+            =#
+        end
+        # Update priors
+        prior_gx = gx
+        prior_gy = gy
+        prior_sx = sx
+        prior_sy = sy
+
         # Populate wave_front
         wave_front = ones(size(reward))*Inf
-     
         wave_front[xVec, yVec] .= 0
-
-        wave_front = gen_wave_bfs(goal, wave_front)
         wave_front = addObstacle(wave_front, obstacles)
+        wave_front = gen_wave_bfs(goal, wave_front)    
+
         # Check if a path is possible, keep expanding if not
         made = possiblePath(wave_front,start,goal)
         
     end
 
-    
-    return wave_front
+    return wave_front, reward, direct
 
 end
 
@@ -155,15 +190,13 @@ function possiblePath(waveFront,start,goal)
         end
 
         if cell == goal
-            made = true
-            break
+            return true
         end
 
         for (dx, dy) in actions
             neighbor = (cell[1] + dx, cell[2] + dy)
 
-            if isValid(cell,waveFront) && isFree(cell,waveFront) && !(neighbor in visited)
-                
+            if BoundCheck(neighbor, waveFront) && isValid(neighbor,waveFront) && isFree(neighbor,waveFront) && !(neighbor in visited)
                 push!(visited, neighbor)
                 push!(queue, neighbor)
 
