@@ -82,6 +82,8 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
         return path
     end
 
+    ## Normalize reward s.t all rewards are between 0 and 1
+    reward = reward/maximum(reward)
 
     for goal in goals
 
@@ -105,18 +107,16 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
             yVec = gy:1:sy
         end
     
-        # Use wavefront planner but not restricted to follow all points
+        # Use wavefront planner to generate the wavefront between start and goal
         wave_front, reward, direct = get_wave(reward, start, goal, xVec, yVec,obstacles)
         
         if direct
-            # If the path is direct, just get the direct path and return it
+            # If the path is direct, just get the direct path and append it to the path
             path_direct = get_direct_path(start, goal)
             append!(path,path_direct)
             start = goal
             continue
         end
-        ## Normalize reward s.t all rewards are between 0 and 1
-        reward = reward/maximum(reward)
 
         # Update wavefront so that it is more incentivized to go to high reward areas
         wave_front = RewardFxn(xVec,yVec,hp,wave_front,reward)
@@ -142,6 +142,7 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
             unchecked_neighbors = [(x+1, y), (x-1, y), (x, y+1), (x, y-1), (x+1, y+1), (x-1, y-1), (x+1, y-1), (x-1, y+1)]
             neighbors = []
 
+            # Only keep neighbors that are in the flight region and not obstacles
             for neighbor in unchecked_neighbors
                 if inBounds(neighbor, wave_front)
                     push!(neighbors, neighbor)
@@ -153,15 +154,15 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
             # Get action should take
             action = action_wavefront(wave_front, neighbors,curr,visited,goal,reward)
 
+            # action = (0,0) means that the planner replanned, and could not find a path to the goal, thus returning a direct path as a fail safe
             if action == (0,0)
                 path_direct = get_direct_path(curr, goal)
                 append!(path,path_direct)
                 break
             end
 
-            # add the action to the path
+            # make the action and move the drone to the new position
             push!(path, tuple(curr[1] + action[1], curr[2] + action[2]))
-
 
         end
 
@@ -185,7 +186,7 @@ end
 function action_wavefront(wave_front, neighbors,node,visited,goal,reward)
 
     valid = false
-
+    direct = false
     # Get the wavefront reward associated with the neighbors
     while !valid
 
@@ -236,9 +237,6 @@ function resetWave(reward, node, goal, hp, obstacles)
     sx, sy = node
     gx, gy = goal
 
-    println("Start: ", node)
-    println("Goal: ", goal)
-    println(reward)
     # Get orientation
     if gx > sx
         xVec = gx:-1:sx
@@ -253,8 +251,6 @@ function resetWave(reward, node, goal, hp, obstacles)
 
     # Reset wavefront, visited, and neighbors
     wave_front, reward, direct = get_wave(reward, node, goal, xVec, yVec,obstacles)
-
-
 
     reward = reward/maximum(reward[xVec, yVec])
 
