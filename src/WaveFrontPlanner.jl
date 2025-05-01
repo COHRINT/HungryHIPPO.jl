@@ -187,6 +187,7 @@ function action_wavefront(wave_front, neighbors,node,visited,goal,reward, hp, ob
 
     valid = false
     direct = false
+    reset = false
     # Get the wavefront reward associated with the neighbors
     while !valid
 
@@ -196,7 +197,10 @@ function action_wavefront(wave_front, neighbors,node,visited,goal,reward, hp, ob
         if isempty(neighbors)
 
             # if all neighbors have been visited, return to the last visited node, clear visited list, and remake the wavefront
-
+            if reset
+                return (0,0)
+            end
+            reset = true
             visited = []
             wave_front, neighbors, direct = resetWave(reward, node, goal, hp, obstacles)
             continue
