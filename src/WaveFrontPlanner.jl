@@ -169,7 +169,13 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
         start = goal
 
     end
-
+    
+    # Need to add a third index to the path for altitude control in HIPPO
+    temp_path = []
+    for p in path
+        push!(temp_path, (p[1], p[2], 0))
+    end
+    path = temp_path
     return path
 
 end
