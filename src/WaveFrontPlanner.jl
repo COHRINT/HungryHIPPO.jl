@@ -152,7 +152,7 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
             end
 
             # Get action should take
-            action = action_wavefront(wave_front, neighbors,curr,visited,goal,reward)
+            action = action_wavefront(wave_front, neighbors,curr,visited,goal,reward,hp)
 
             # action = (0,0) means that the planner replanned, and could not find a path to the goal, thus returning a direct path as a fail safe
             if action == (0,0)
@@ -183,7 +183,7 @@ end
 #          goal -> goal node
 # Outputs: action -> action to take
 
-function action_wavefront(wave_front, neighbors,node,visited,goal,reward)
+function action_wavefront(wave_front, neighbors,node,visited,goal,reward, hp)
 
     valid = false
     direct = false
@@ -192,6 +192,7 @@ function action_wavefront(wave_front, neighbors,node,visited,goal,reward)
 
         wave_vals = []
 
+        # If the neighbors are empty, we need to reset the wavefront and neighbors -> replan
         if isempty(neighbors)
 
             # if all neighbors have been visited, return to the last visited node, clear visited list, and remake the wavefront
