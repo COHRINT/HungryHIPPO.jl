@@ -50,11 +50,11 @@ function visualizeWaveFront(start,goal,obstacles,waveFront)
 end
 
 
-function visualizeRewardMap(start,goal,db,path,obstacles)
+function visualizeRewardMap(start,goal,reward,path,obstacles)
     
     # Create a heatmap using PlotlyJS
-    z=db.reward
-    grid_size = size(db.reward)
+    z=reward
+    grid_size = size(reward)
     
     sc = 1
 

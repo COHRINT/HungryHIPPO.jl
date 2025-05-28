@@ -1,5 +1,6 @@
 
 include("WaveFrontGen.jl")
+include("smart_WaveFront.jl")
 
 mutable struct weights
     # Struct to hold the weights for the reward function
@@ -110,6 +111,7 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
         # Use wavefront planner to generate the wavefront between start and goal
         wave_front, reward, direct = get_wave(reward, start, goal, xVec, yVec,obstacles)
         
+
         if direct
             # If the path is direct, just get the direct path and append it to the path
             path_direct = get_direct_path(start, goal)
@@ -118,6 +120,8 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
             continue
         end
 
+        wave_front, xVec, yVec = expand_Wavefront(waveFront,reward,goal, s0,xVec, yVec)
+        
         # Update wavefront so that it is more incentivized to go to high reward areas
         wave_front = RewardFxn(xVec,yVec,hp,wave_front,reward)
     
@@ -296,7 +300,7 @@ function RewardFxn(xVec,yVec,hp,wave_front,reward)
             if reward[i,j] > hp.threshold
                 wave_front[i,j] = wave_front[i,j] - (1+reward[i,j])^hp.w
             else
-                # TEST - Inflate wave_front more when threshold is not met
+                #Inflate wave_front more when threshold is not met
                 wave_front[i,j] = wave_front[i,j] + (1+reward[i,j])^hp.w
                 
             end

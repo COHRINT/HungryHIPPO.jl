@@ -89,6 +89,7 @@ function get_wave(reward, start, goal, xVec, yVec, obstacles)
             println("No Valid path found, returning direct path")
             direct = true
             break
+            
             #= For now, just return the direct path to the goal
             # Expand the reward by 1 in all directions
             rows, cols = size(reward)

@@ -1,38 +1,19 @@
 include("visualize.jl")
-include("./../RINAO.jl/test/evaluateOperatorData.jl")
+#include("C:/Users/bijan/Documents/COHIRNT/RINAO.jl/test/evaluateOperatorData.jl")
 include("../src/WaveFrontGen.jl")
 include("../src/WaveFrontPlanner.jl")
+include("../src/smart_WaveFront.jl")
 
-toPlot = false
 
-S1 = "./../RINAO.jl/operator_data/Brainard/Brainard_S1.jl"
-S2 = "./../RINAO.jl/operator_data/Brainard/Brainard_S2.jl"
-S3 = "./../RINAO.jl/operator_data/Brainard/Brainard_S3.jl"
-S4 = "./../RINAO.jl/operator_data/Brainard/Brainard_S4.jl"
-S5 = "./../RINAO.jl/operator_data/Brainard/Brainard_S5.jl"
-S6 = "./../RINAO.jl/operator_data/Brainard/Brainard_S6.jl"
-S7 = "./../RINAO.jl/operator_data/Brainard/Brainard_S7.jl"
-S8 = "./../RINAO.jl/operator_data/Brainard/Brainard_S8.jl"
-S9 = "./../RINAO.jl/operator_data/Brainard/Brainard_S9.jl"
-S10 = "./../RINAO.jl/operator_data/Brainard/Brainard_S10.jl"
+goal = (80,23)
+s0 = (100, 24)
 
-include(S2)
-db, vars, inputs = processJSONInputs(inputJSON, toPlot)
+reward = rand(120,120)
 
-goal = (30,67)
-s0 = (24, 100)
-
-reward = db.reward / maximum(db.reward)
 obstacles = []
 
-for i in 25:1:30
-    push!(obstacles, (i, 82))
-    push!(obstacles, (i, 83))
-    push!(obstacles, (i, 84))
-end
 
-
-reward = db.reward
+#reward = db.reward
 
 sx = s0[1]
 sy = s0[2]
@@ -55,7 +36,9 @@ end
 
 hp = weights(1.5,0.6)
 
-waveFront = get_wave(reward, s0, goal, xVec, yVec, obstacles)
+waveFront,reward,direct = get_wave(reward, s0, goal, xVec, yVec, obstacles)
+#println(waveFront)
+waveFront, xVec, yVec = expand_Wavefront(waveFront,reward,goal, s0,xVec, yVec)
 waveFront = RewardFxn(xVec,yVec,hp,waveFront,reward)
 visualizeWaveFront(s0,goal,obstacles,waveFront)
 
