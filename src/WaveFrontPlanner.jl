@@ -139,7 +139,6 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
 
             # update curr
             curr = path[end]
-            println("Current node: ", curr)
             x,y = curr
 
             # check neighbors are in bounds to prevent errors
