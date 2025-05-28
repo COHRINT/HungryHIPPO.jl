@@ -7,7 +7,7 @@ encompass more of the environment and allow the agent to find a higher reward pa
 
 include("WaveFrontGen.jl")
 
-function expand_Wavefront(wave_front,reward,goal, start,xVec, yVec)
+function expand_Wavefront(wave_front,obstacles,reward,goal, start,xVec, yVec)
 
     # Determine how much and the direction to expand the wavefront
 

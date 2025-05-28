@@ -120,7 +120,7 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
             continue
         end
 
-        wave_front, xVec, yVec = expand_Wavefront(wave_front,reward,goal, start,xVec, yVec)
+        wave_front, xVec, yVec = expand_Wavefront(wave_front, obstacles,reward,goal, start,xVec, yVec)
         
         # Update wavefront so that it is more incentivized to go to high reward areas
         wave_front = RewardFxn(xVec,yVec,hp,wave_front,reward)
