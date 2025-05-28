@@ -74,7 +74,7 @@ function expand_Wavefront(wave_front,reward,goal, start,xVec, yVec)
 
     end
     println("Final Aspect Ratio: ", AR)
-    wave_front,~,~ = get_wave(reward, s0, goal, xVec, yVec, obstacles)
+    wave_front,~,~ = get_wave(reward, start, goal, xVec, yVec, obstacles)
 
     return wave_front, xVec, yVec
 end
