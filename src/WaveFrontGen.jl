@@ -107,10 +107,10 @@ function get_wave(reward, start, goal, xVec, yVec, obstacles)
         prior_gy = gy
         prior_sx = sx
         prior_sy = sy
-        println("Prior gx: ", prior_gx)
-        println("Prior gy: ", prior_gy)
-        println("Prior sx: ", prior_sx)
-        println("Prior sy: ", prior_sy)
+        println("Prior gx: ", prior_gx, " ", gx)
+        println("Prior gy: ", prior_gy, " ", gy)
+        println("Prior sx: ", prior_sx, " ", sx)
+        println("Prior sy: ", prior_sy, " ", sy)
         # Populate wave_front
         wave_front = ones(size(reward))*Inf
         wave_front[xVec, yVec] .= 0
