@@ -138,6 +138,7 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
             push!(visited,path[end])
 
             # update curr
+            println(curr)
             curr = path[end]
             x,y = curr
 

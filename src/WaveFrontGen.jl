@@ -80,7 +80,6 @@ function get_wave(reward, start, goal, xVec, yVec, obstacles)
             if sy < size(reward,2)
                 sy += 1
             end
-      
             yVec = gy:1:sy
         end
         
@@ -108,7 +107,10 @@ function get_wave(reward, start, goal, xVec, yVec, obstacles)
         prior_gy = gy
         prior_sx = sx
         prior_sy = sy
-
+        println("Prior gx: ", prior_gx)
+        println("Prior gy: ", prior_gy)
+        println("Prior sx: ", prior_sx)
+        println("Prior sy: ", prior_sy)
         # Populate wave_front
         wave_front = ones(size(reward))*Inf
         wave_front[xVec, yVec] .= 0
@@ -117,7 +119,7 @@ function get_wave(reward, start, goal, xVec, yVec, obstacles)
 
         # Check if a path is possible, keep expanding if not
         made = possiblePath(wave_front,start,goal)
-        
+        println("Made: ", made)
     end
 
     return wave_front, reward, direct
