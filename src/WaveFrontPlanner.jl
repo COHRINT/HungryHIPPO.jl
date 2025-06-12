@@ -1,6 +1,6 @@
 
 include("WaveFrontGen.jl")
-include("../test/visualize.jl")
+#include("../test/visualize.jl")
 
 mutable struct weights
     # Struct to hold the weights for the reward function
@@ -122,7 +122,7 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
         
         # Update wavefront so that it is more incentivized to go to high reward areas
         wave_front = RewardFxn(xVec,yVec,hp,wave_front,reward)
-        visualizeWaveFront(start,goal,obstacles,wave_front)
+        #visualizeWaveFront(start,goal,obstacles,wave_front)
         # Now, to motion plan, start at start, and move to the minimum value at each step
         # add first point to path
         push!(path, start)
