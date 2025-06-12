@@ -8,7 +8,7 @@ include("../src/smart_WaveFront.jl")
 goal = (80,23)
 s0 = (100, 24)
 
-reward = rand(120,120)
+reward = ones(120,120)
 
 obstacles = []
 

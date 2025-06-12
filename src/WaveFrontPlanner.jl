@@ -1,6 +1,6 @@
 
 include("WaveFrontGen.jl")
-include("smart_WaveFront.jl")
+include("../test/visualize.jl")
 
 mutable struct weights
     # Struct to hold the weights for the reward function
@@ -109,8 +109,8 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
         end
     
         # Use wavefront planner to generate the wavefront between start and goal
-        wave_front, reward, direct = get_wave(reward, start, goal, xVec, yVec,obstacles)
-        
+        wave_front, xVec, yVec, direct = get_wave(reward, start, goal, xVec, yVec,obstacles)
+
 
         if direct
             # If the path is direct, just get the direct path and append it to the path
@@ -119,12 +119,10 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
             start = goal
             continue
         end
-
-        wave_front, xVec, yVec = expand_Wavefront(wave_front, obstacles,reward,goal, start,xVec, yVec)
         
         # Update wavefront so that it is more incentivized to go to high reward areas
         wave_front = RewardFxn(xVec,yVec,hp,wave_front,reward)
-    
+        visualizeWaveFront(start,goal,obstacles,wave_front)
         # Now, to motion plan, start at start, and move to the minimum value at each step
         # add first point to path
         push!(path, start)
@@ -139,7 +137,7 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
 
             # update curr
             curr = path[end]
-            println(curr)
+            println("Curr: ", curr)
             x,y = curr
 
             # check neighbors are in bounds to prevent errors
@@ -155,23 +153,24 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
                 end
             end
 
-            # Get action should take
-            action = action_wavefront(wave_front, neighbors,curr,visited,goal,reward,hp,obstacles)
-
-            # action = (0,0) means that the planner replanned, and could not find a path to the goal, thus returning a direct path as a fail safe
-            if action == (0,0)
+            # If the neighbors list is empty, reset the wavefront and continue
+            if isempty(neighbors)
+                visited = []
+                wave_front, neighbors, direct = resetWave(reward, node, goal, hp, obstacles)
+                continue
+            
+            end
+            # Planner replanned, and could not find a path to the goal, thus returning a direct path as a fail safe
+            if direct
                 path_direct = get_direct_path(curr, goal)
                 append!(path,path_direct)
-                break
             end
-
+                # Get action should take
+            action = action_wavefront(wave_front, neighbors,curr,visited,goal,reward,hp,obstacles)
             # make the action and move the drone to the new position
             push!(path, tuple(curr[1] + action[1], curr[2] + action[2]))
-
         end
-
         start = goal
-
     end
     
     # Need to add a third index to the path for altitude control in HIPPO
@@ -195,31 +194,10 @@ end
 
 function action_wavefront(wave_front, neighbors,node,visited,goal,reward, hp, obstacles)
 
-    valid = false
-    direct = false
-    reset = false
     # Get the wavefront reward associated with the neighbors
-    while !valid
+    while true
 
         wave_vals = []
-
-        # If the neighbors are empty, we need to reset the wavefront and neighbors -> replan
-        if isempty(neighbors)
-
-            # if all neighbors have been visited, return to the last visited node, clear visited list, and remake the wavefront
-            if reset
-                return (0,0)
-            end
-            reset = true
-            visited = []
-            wave_front, neighbors, direct = resetWave(reward, node, goal, hp, obstacles)
-            continue
-
-        end
-
-        if direct
-            return (0,0)
-        end
 
         for neighbor in neighbors
             push!(wave_vals, wave_front[neighbor[1], neighbor[2]])
@@ -231,7 +209,6 @@ function action_wavefront(wave_front, neighbors,node,visited,goal,reward, hp, ob
         
         # Ensure the cell has not been visited
         chckNode = node .+ action
-
         if chckNode in visited
             # if node has been visited, get a new action and remove that cell from neighbors
             deleteat!(neighbors, findall(x->x==neighbors[min_index],neighbors))
@@ -320,10 +297,9 @@ function inBounds(neighbor, wave_front)
     end
 
     if wave_front[neighbor[1], neighbor[2]] == Inf || wave_front[neighbor[1], neighbor[2]] == 1
-        # Check if the node is an obstacle or has a wavefront value of 0
+        # Check if the node is an obstacle ( = 1) or has a wavefront value of Inf
         return false
-    else
-           
+    else          
         return true
     end
 

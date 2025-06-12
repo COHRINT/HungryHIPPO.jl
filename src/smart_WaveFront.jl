@@ -5,14 +5,12 @@ encompass more of the environment and allow the agent to find a higher reward pa
 
 =#
 
-include("WaveFrontGen.jl")
-
-function expand_Wavefront(wave_front,obstacles,reward,goal, start,xVec, yVec)
+function expand_Wavefront(reward,goal, start,xVec, yVec)
 
     # Determine how much and the direction to expand the wavefront
 
     AR = get_AR(xVec, yVec)
-   
+
     sx, sy = start
     gx, gy = goal
 
@@ -37,7 +35,6 @@ function expand_Wavefront(wave_front,obstacles,reward,goal, start,xVec, yVec)
                 if sy < size(reward,2)
                     sy += 1
                 end
-      
                 yVec = gy:1:sy
 
             end
@@ -71,9 +68,8 @@ function expand_Wavefront(wave_front,obstacles,reward,goal, start,xVec, yVec)
         AR = get_AR(xVec, yVec)
 
     end
-    wave_front,~,~ = get_wave(reward, start, goal, xVec, yVec, obstacles)
 
-    return wave_front, xVec, yVec
+    return xVec, yVec
 end
 
 function get_AR(xVec, yVec)

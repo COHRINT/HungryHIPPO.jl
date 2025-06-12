@@ -1,4 +1,5 @@
 
+include("smart_WaveFront.jl")
 #=
 The purpose of this file is to house all the required functions to generate a wavefront which can then be used in the wavefront planner.
 
@@ -20,6 +21,7 @@ function get_wave(reward, start, goal, xVec, yVec, obstacles)
     prior_sx = 0
     prior_sy = 0
 
+    xVec, yVec = expand_Wavefront(reward,goal, start,xVec, yVec)
     # Populate wave_front
     wave_front = ones(size(reward))*Inf
     wave_front[xVec, yVec] .= 0
@@ -103,10 +105,6 @@ function get_wave(reward, start, goal, xVec, yVec, obstacles)
             =#
         end
         # Update priors
-        println("Prior gx: ", prior_gx, " ", gx)
-        println("Prior gy: ", prior_gy, " ", gy)
-        println("Prior sx: ", prior_sx, " ", sx)
-        println("Prior sy: ", prior_sy, " ", sy)
         prior_gx = gx
         prior_gy = gy
         prior_sx = sx
@@ -123,7 +121,7 @@ function get_wave(reward, start, goal, xVec, yVec, obstacles)
         println("Made: ", made)
     end
 
-    return wave_front, reward, direct
+    return wave_front, xVec, yVec, direct
 
 end
 

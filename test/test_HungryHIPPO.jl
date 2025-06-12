@@ -4,14 +4,14 @@ include("visualize.jl")
 
 # Testing/Debugging HungryHIPPO
 
-reward = rand(120,120)
+reward = ones(120,120)
 
 # List of ordered waypoints for the planner to visit
-goal = [(12,13),(10, 17), (11,19),(13,19),(13,22)]
- 
+goal = [(12,13)]
+
 # Start node
 s0 = (8,6)
- 
+
 #hyperparameters struct, hp
 hp = weights(1.75,0.75)
 
