@@ -242,7 +242,7 @@ function resetWave(reward, node, goal, hp, obstacles)
     end
 
     # Reset wavefront, visited, and neighbors
-    wave_front, reward, direct = get_wave(reward, node, goal, xVec, yVec,obstacles)
+    wave_front, xVec, yVec, direct = get_wave(reward, node, goal, xVec, yVec,obstacles)
 
     reward = reward/maximum(reward) # Normalize reward
 
