@@ -146,7 +146,7 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
 
             # Only keep neighbors that are in the flight region and not obstacles
             for neighbor in unchecked_neighbors
-                if inBounds(neighbor, wave_front)
+                if inBounds(neighbor, wave_front) || !(neighbor in visited)
                     push!(neighbors, neighbor)
                 else
                     continue
@@ -158,12 +158,12 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
                 visited = []
                 wave_front, neighbors, direct = resetWave(reward, node, goal, hp, obstacles)
                 continue
-            
             end
             # Planner replanned, and could not find a path to the goal, thus returning a direct path as a fail safe
             if direct
                 path_direct = get_direct_path(curr, goal)
                 append!(path,path_direct)
+                continue
             end
                 # Get action should take
             action = action_wavefront(wave_front, neighbors,curr,visited,goal,reward,hp,obstacles)
