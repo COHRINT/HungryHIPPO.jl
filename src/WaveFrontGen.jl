@@ -35,40 +35,28 @@ function get_wave(reward, start, goal, xVec, yVec, obstacles)
     made = possiblePath(wave_front,start,goal)
 
     while !made
-
-        # Expand the wavefront - get orientation to expand WF
-        println("Expanding wavefront")
         if gx > sx
-
             if gx < size(reward,1)
                 gx += 1
             end
-
             if sx > 2
                 sx -= 1
             end
-
             xVec = gx:-1:sx
-
         else
-
             if gx > 2
                 gx -= 1
             end
-
             if sx < size(reward,1)
                 sx += 1
             end
             
             xVec = gx:1:sx
         end
-    
         if gy > sy
-
             if gy < size(reward,2)
                 gy += 1
             end
-
             if sy > 2 
                 sy -= 1
             end
@@ -78,7 +66,6 @@ function get_wave(reward, start, goal, xVec, yVec, obstacles)
             if gy > 2
                 gy -= 1
             end
-
             if sy < size(reward,2)
                 sy += 1
             end
@@ -90,19 +77,6 @@ function get_wave(reward, start, goal, xVec, yVec, obstacles)
             println("No Valid path found, returning direct path")
             direct = true
             break
-            
-            #= For now, just return the direct path to the goal
-            # Expand the reward by 1 in all directions
-            rows, cols = size(reward)
-
-            new_row = zeros(1, cols)
-            new_cols = zeros(rows+2, 1)
-
-            reward = vcat(new_row, reward, new_row)
-            reward = hcat(new_cols, reward, new_cols)
-
-            #println("Reward map expanded", reward)
-            =#
         end
         # Update priors
         prior_gx = gx
@@ -111,6 +85,7 @@ function get_wave(reward, start, goal, xVec, yVec, obstacles)
         prior_sy = sy
 
         # Populate wave_front
+        xVec, yVec = expand_Wavefront(reward,goal, start,xVec, yVec)
         wave_front = ones(size(reward))*Inf
         wave_front[xVec, yVec] .= 0
         wave_front = addObstacle(wave_front, obstacles)

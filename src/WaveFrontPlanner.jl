@@ -1,6 +1,6 @@
 
+using ImageFiltering
 include("WaveFrontGen.jl")
-#include("../test/visualize.jl")
 
 mutable struct weights
     # Struct to hold the weights for the reward function
@@ -121,8 +121,8 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
         end
         
         # Update wavefront so that it is more incentivized to go to high reward areas
+        
         wave_front = RewardFxn(xVec,yVec,hp,wave_front,reward)
-        #visualizeWaveFront(start,goal,obstacles,wave_front)
         # Now, to motion plan, start at start, and move to the minimum value at each step
         # add first point to path
         push!(path, start)
@@ -252,36 +252,33 @@ function resetWave(reward, node, goal, hp, obstacles)
     neighbors = []
 
     for neighbor in unchecked_neighbors
-
         if inBounds(neighbor, wave_front)
             push!(neighbors, neighbor)
         else
             continue
         end
-
     end
     
     return wave_front, direct
 end
 
 function RewardFxn(xVec,yVec,hp,wave_front,reward)
-    
+
+    # Apply a gaussian blur to reduce the likelihood of local mins
+    smoothed_reward = imfilter(reward,Kernel.gaussian(4))
+
     for  i in xVec
         for j in yVec
-
             if wave_front[i,j] == 1
                 continue
             end
-            
-            # Potentially rethink how we weigh our rewards, reduce hyperparameters
             if reward[i,j] > hp.threshold
-                wave_front[i,j] = wave_front[i,j] - (1+reward[i,j])^hp.w
+                wave_front[i,j] = wave_front[i,j] - (1+smoothed_reward[i,j])^hp.w
             else
                 #Inflate wave_front more when threshold is not met
-                wave_front[i,j] = wave_front[i,j] + (1+reward[i,j])^hp.w
+                wave_front[i,j] = wave_front[i,j] + (1+smoothed_reward[i,j])^hp.w
                 
             end
-
         end
     end 
 

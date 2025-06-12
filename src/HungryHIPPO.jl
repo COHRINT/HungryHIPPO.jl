@@ -1,10 +1,10 @@
 module HungryHIPPO
-
+    
+using ImageFiltering
     include("WaveFrontPlanner.jl")
-    include("WaveFrontGen.jl")
+    
 
     export
-    wavefrontPlanner,
-    get_direct_path
+    wavefrontPlanner, get_direct_path
 
 end
