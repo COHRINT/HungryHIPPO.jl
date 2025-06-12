@@ -146,7 +146,7 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
 
             # Only keep neighbors that are in the flight region and not obstacles
             for neighbor in unchecked_neighbors
-                if inBounds(neighbor, wave_front) || !(neighbor in visited)
+                if inBounds(neighbor, wave_front) && !(neighbor in visited)
                     push!(neighbors, neighbor)
                 else
                     continue
