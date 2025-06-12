@@ -93,7 +93,6 @@ function get_wave(reward, start, goal, xVec, yVec, obstacles)
 
         # Check if a path is possible, keep expanding if not
         made = possiblePath(wave_front,start,goal)
-        println("Made: ", made)
     end
 
     return wave_front, xVec, yVec, direct

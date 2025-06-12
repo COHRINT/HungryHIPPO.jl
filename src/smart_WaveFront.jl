@@ -10,11 +10,11 @@ function expand_Wavefront(reward,goal, start,xVec, yVec)
     # Determine how much and the direction to expand the wavefront
 
     AR = get_AR(xVec, yVec)
-
+    counter = 0 # Fail safe, if the reward map is too small sometimes we could get stuck here.
     sx, sy = start
     gx, gy = goal
 
-    while AR > 2.75 || AR < 0.6
+    while (AR > 2.75 || AR < 0.6) && counter > 20
         if AR > 2.75 # Wavefront is too long, expand vertically
             if gy > sy
 
@@ -65,6 +65,7 @@ function expand_Wavefront(reward,goal, start,xVec, yVec)
             end
         end
 
+        counter += 1
         AR = get_AR(xVec, yVec)
 
     end
@@ -77,7 +78,8 @@ function get_AR(xVec, yVec)
 
     # For large aspect ratios (>> 1), the wave_front is long and skinny, which is not ideal.
     # For small aspect ratios (<< 1), the wavefront is tall and narrow, which is also not ideal.
-    # We want the aspect ratio to be close to 1, which means the wavefront is roughly square. 
+    # We want the aspect ratio to be close to 1, which means the wavefront is roughly square.
+    
     return size(xVec,1) / size(yVec,1) # Width / Height
 
 end
