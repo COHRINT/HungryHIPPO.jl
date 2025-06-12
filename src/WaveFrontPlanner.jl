@@ -156,7 +156,7 @@ function wavefrontPlanner(reward, start, goals,hp,obstacles)
             # If the neighbors list is empty, reset the wavefront and continue
             if isempty(neighbors)
                 visited = []
-                wave_front, neighbors, direct = resetWave(reward, curr, goal, hp, obstacles)
+                wave_front, direct = resetWave(reward, curr, goal, hp, obstacles)
                 continue
             end
             # Planner replanned, and could not find a path to the goal, thus returning a direct path as a fail safe
@@ -244,7 +244,7 @@ function resetWave(reward, node, goal, hp, obstacles)
     # Reset wavefront, visited, and neighbors
     wave_front, reward, direct = get_wave(reward, node, goal, xVec, yVec,obstacles)
 
-    reward = reward/maximum(reward[xVec, yVec])
+    reward = reward/maximum(reward) # Normalize reward
 
     wave_front = RewardFxn(xVec,yVec,hp,wave_front,reward)
 
@@ -261,7 +261,7 @@ function resetWave(reward, node, goal, hp, obstacles)
 
     end
     
-    return wave_front, neighbors, direct
+    return wave_front, direct
 end
 
 function RewardFxn(xVec,yVec,hp,wave_front,reward)
